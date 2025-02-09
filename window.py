@@ -23,3 +23,10 @@ class Window:
         def close(self):
             self.is_running = False
 
+        def draw_line(self, line, fill_colour):
+            return line.draw(self.canvas, fill_colour)
+        
+        def delete_item(self, item):
+            self.canvas.delete(item)
+
+
