@@ -41,11 +41,14 @@ def draw_test_maze_large(window):
                 cell_size_x = 20,
                 cell_size_y = 20,
                 window = window,
-                frametime = 0.002)
+                frametime = 0.1,
+                seed = "sean-smells",
+                animate_creation=False)
 
     maze.break_entrance_and_exit()
-
     maze.break_walls_recursively((0,0))
+    maze.reset_cells_visited()
+    maze.solve()
 
 def draw_test_maze_medium(window):
 
@@ -56,11 +59,14 @@ def draw_test_maze_medium(window):
                 cell_size_x = 50,
                 cell_size_y = 50,
                 window = window,
-                frametime = 0.02)
+                frametime = 0.2,
+                seed = "veronica-smells",
+                animate_creation=False)
 
     maze.break_entrance_and_exit()
-
     maze.break_walls_recursively((0,0))
+    maze.reset_cells_visited()
+    maze.solve()
 
 def draw_test_maze_small(window):
 
@@ -71,21 +77,22 @@ def draw_test_maze_small(window):
                 cell_size_x = 100,
                 cell_size_y = 100,
                 window = window,
-                frametime = 0.05)
+                frametime = 0.005,
+                animate_creation=True)
 
     maze.break_entrance_and_exit()
-
     maze.break_walls_recursively((0,0))
+    maze.reset_cells_visited()
+    maze.solve()
+
 
 def main():
 
     win = Window(800, 600)
 
     # draw_test_lines(win)
-    
     # draw_test_cells(win)
-
-    draw_test_maze_medium(win)
+    draw_test_maze_small(win)
 
     win.wait_for_close()
     print("hello world")

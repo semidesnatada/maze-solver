@@ -6,13 +6,30 @@ class Point:
     def __repr__(self):
         return f"Point({self.x, self.y})"
 
+class Circle:
+    def __init__(self, centre, r):
+        self.centre = centre
+        self.r = r
+    
+    def draw(self, canvas, fill_colour):
+        return canvas.create_oval(self.centre.x-self.r,
+                                  self.centre.y-self.r,
+                                  self.centre.x+self.r,
+                                  self.centre.y+self.r, 
+                                  fill = fill_colour)
+
 class Line:
     def __init__(self, point_1, point_2):
         self.point_1 = point_1
         self.point_2 = point_2
 
     def draw(self, canvas, fill_colour):
-       return canvas.create_line(self.point_1.x, self.point_1.y,self.point_2.x, self.point_2.y,fill = fill_colour, width = 2)
+       return canvas.create_line(self.point_1.x,
+                                 self.point_1.y,
+                                 self.point_2.x,
+                                 self.point_2.y,
+                                 fill = fill_colour,
+                                 width = 2)
 
     def __eq__(self, other):
         comp_1 = self.point_1 == other.point_1 and self.point_2 == other.point_2
@@ -33,11 +50,12 @@ class Cell:
         self.window = window
         self.edges_drawn = {}
         self.visited = False
+        self.filled = False
         self.reorganise_corners()
         self.check_corners_are_valid()
 
     def __repr__(self):
-        return f"Cell(top-left:{self.top_left}, bottom-right:{self.bottom_right}, walls: left({self.has_left}), right({self.has_right}), top({self.has_up}), bottom({self.has_down}))"
+        return f"Cell(top-left:{self.top_left}, bottom-right:{self.bottom_right}, walls: left({self.has_left}), right({self.has_right}), top({self.has_up}), bottom({self.has_down}). visited = {self.visited})"
 
     def check_corners_are_valid(self):
         if self.top_left.x - self.bottom_right.x >= 0:
@@ -51,13 +69,19 @@ class Cell:
             self.top_left = self.bottom_right
             self.bottom_right = temp
 
+    def fill(self):
+        self.filled = self.window.fill_cell(self)
+    
+    def remove_fill(self):
+        self.window.delete_item(self.filled)
+
     def draw(self):
         if self.has_left:
-            self.edges_drawn['l'] = self.window.draw_line(Line(self.top_left, Point(self.top_left.x, self.bottom_right.y)), "orange")
+            self.edges_drawn['l'] = self.window.draw_line(Line(self.top_left, Point(self.top_left.x, self.bottom_right.y)), "black")
         if self.has_right:
-            self.edges_drawn['r'] = self.window.draw_line(Line(self.bottom_right, Point(self.bottom_right.x, self.top_left.y)), "blue")
+            self.edges_drawn['r'] = self.window.draw_line(Line(self.bottom_right, Point(self.bottom_right.x, self.top_left.y)), "black")
         if self.has_up:
-            self.edges_drawn['u'] = self.window.draw_line(Line(self.top_left, Point(self.bottom_right.x, self.top_left.y)), "yellow")
+            self.edges_drawn['u'] = self.window.draw_line(Line(self.top_left, Point(self.bottom_right.x, self.top_left.y)), "black")
         if self.has_down:
             self.edges_drawn['d'] = self.window.draw_line(Line(self.bottom_right, Point(self.top_left.x, self.bottom_right.y)), "black")
     
@@ -66,9 +90,6 @@ class Cell:
 
     def draw_move(self, other, undo=False):
         connection = Line(self.get_centre(), other.get_centre())
-        print()
-        print(connection)
-        print()
         if undo:
             self.window.draw_line(connection, "gray")
         else:
@@ -76,3 +97,11 @@ class Cell:
     
     def remove_edge(self, side):
         self.window.delete_item(self.edges_drawn[side])
+        if side == "l":
+            self.has_left = False
+        elif side == "r":
+            self.has_right = False
+        elif side == 'u':
+            self.has_up = False
+        else:
+            self.has_down = False

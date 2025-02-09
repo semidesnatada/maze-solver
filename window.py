@@ -29,4 +29,13 @@ class Window:
         def delete_item(self, item):
             self.canvas.delete(item)
 
+        def draw_circle(self, circle, fill_colour):
+            return circle.draw(self.canvas, fill_colour)
+
+        def fill_cell(self, cell):
+            return self.canvas.create_rectangle(cell.top_left.x,
+                                                cell.top_left.y,
+                                                cell.bottom_right.x,
+                                                cell.bottom_right.y,
+                                                fill = "black")
 
