@@ -1,4 +1,4 @@
-from drawables import Cell, Point, Circle
+from drawables import Cell, Point, Circle, Text
 import time
 import random
 
@@ -141,11 +141,6 @@ class Maze:
                          'u' : self.cells[current_cell].has_up,
                          'd' : self.cells[current_cell].has_down}
         
-        # print()
-        # print("debugging")
-        # print(current_cell)
-        # print(current_walls)
-        
         valids = {}
         for direction, new_cell in adjacents.items():
             if new_cell in self.cells:
@@ -154,6 +149,63 @@ class Maze:
                         valids[direction] = new_cell
 
         return valids
+
+    def get_all_non_walled_adjacent_cells(self, current_cell):
+        """identifies all adjacent cells to a given cell,
+        which are within the boundaries of the maze."""
+
+        adjacents = {'l' : (current_cell[0] - 1, current_cell[1]), 
+                     'd' : (current_cell[0], current_cell[1] + 1), 
+                     'r' : (current_cell[0] + 1, current_cell[1]), 
+                     'u' : (current_cell[0], current_cell[1] - 1)}
+        current_walls = {'l' : self.cells[current_cell].has_left,
+                         'r' : self.cells[current_cell].has_right,
+                         'u' : self.cells[current_cell].has_up,
+                         'd' : self.cells[current_cell].has_down}
+        
+        valids = {}
+        for direction, new_cell in adjacents.items():
+            if new_cell in self.cells:
+                if not current_walls[direction]:
+                    valids[direction] = new_cell
+
+        return valids
+
+    def get_cells_neighbouring_over_wall(self, current_cell):
+        """identifies all adjacent cells to a given cell,
+        which are within the boundaries of the maze, and 
+        which are across a wall from the current cell."""
+
+        adjacents = {'l' : (current_cell[0] - 1, current_cell[1]), 
+                     'd' : (current_cell[0], current_cell[1] + 1), 
+                     'r' : (current_cell[0] + 1, current_cell[1]), 
+                     'u' : (current_cell[0], current_cell[1] - 1)}
+        current_walls = {'l' : self.cells[current_cell].has_left,
+                         'r' : self.cells[current_cell].has_right,
+                         'u' : self.cells[current_cell].has_up,
+                         'd' : self.cells[current_cell].has_down}
+        
+        valids = {}
+        for direction, new_cell in adjacents.items():
+            if new_cell in self.cells:
+                    if current_walls[direction]:
+                        valids[direction] = new_cell
+
+        return valids
+
+    def break_additional_walls(self, number):
+        oppo = {'l':'r',
+                'r':'l',
+                'u':'d',
+                'd':'u'}
+        chosen = random.choices(list(self.cells.keys()),k=number)
+        for choice in chosen:
+            cell = self.cells[choice]
+            neighbours = self.get_cells_neighbouring_over_wall(choice)
+            if neighbours:
+                choice_pair = random.choice(list(neighbours.keys()))
+                self.cells[choice].remove_edge(choice_pair)
+                self.cells[neighbours[choice_pair]].remove_edge(oppo[choice_pair])
 
     def solve(self):
         # self.fill_all_unvisited_cells()
@@ -198,4 +250,64 @@ class Maze:
         # except NameError:
         #     print("no retreating marker to delete")
 
+        return False
+    
+    def get_all_dead_end_cells(self, include_start_and_end):
+        self.dead_ends = {}
+        for key, cell in self.cells.items():
+            if cell.is_dead_end():
+                self.dead_ends[key] = cell
+        
+        if include_start_and_end:
+            self.dead_ends[(0,0)] = self.cells[(0,0)]
+            self.dead_ends[(self.num_cols-1, self.num_rows-1)] = self.cells[(self.num_cols-1, self.num_rows-1)] 
+
+
+    def draw_dead_ends(self):
+        for key, cell in self.dead_ends.items():
+            dead_end = Circle(cell.get_centre(), 5)
+            dead_end_marker = self.window.draw_circle(dead_end, "blue")
+
+    def find_distance_to_nearest_dead_end(self, initial_cell):
+        """Implement a breadth-first search for the nearest dead end.
+        Returns the number of steps taken to reach the nearest dead end."""
+        
+        distance_travelled = 0
+
+        if initial_cell in self.dead_ends:
+            return distance_travelled
+
+        to_visit = list(self.get_unvisited_adjacent_cells_for_solve(initial_cell).values())
+        already_visited = [initial_cell]
+
+        while True:
+            to_visit_this_round = to_visit.copy()
+            to_visit = []
+            distance_travelled += 1
+            for neighbouring_cell in to_visit_this_round:
+                if neighbouring_cell in self.dead_ends:
+                    return distance_travelled
+                new_cells = self.get_unvisited_adjacent_cells_for_solve(neighbouring_cell).values()
+                for identified_cell in new_cells:
+                    if identified_cell not in already_visited and identified_cell not in to_visit:
+                        to_visit.append(identified_cell)
+
+        return 500
+    
+    def set_nearest_dead_ends(self):
+        for cell in self.cells:
+            result = self.find_distance_to_nearest_dead_end(cell)
+            self.cells[cell].nearest_dead_end = result
+
+    def draw_nearest_dead_ends(self):
+        for key, cell in self.cells.items():
+            #draw a text in each cell with the cell.distance_to_dead_end value
+            centre = cell.get_centre()
+            count = Text(centre.x, centre.y, text = cell.nearest_dead_end)
+            dead_end_marker = self.window.draw_text(count, "black")
+
+    def is_cell_reachable(self, cell_1_inds, cell_2_inds):
+        valids = self.get_all_non_walled_adjacent_cells(cell_1_inds)
+        if cell_2_inds in valids.values():
+            return True
         return False

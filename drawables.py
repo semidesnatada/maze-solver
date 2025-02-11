@@ -6,6 +6,18 @@ class Point:
     def __repr__(self):
         return f"Point({self.x, self.y})"
 
+class Text:
+    def __init__(self, x, y, text):
+        self.x = x
+        self.y = y
+        self.text = text
+
+    def draw(self, canvas, fill_colour):
+        return canvas.create_text(self.x,
+                                  self.y, 
+                                  fill = fill_colour,
+                                  text = self.text)
+
 class Circle:
     def __init__(self, centre, r):
         self.centre = centre
@@ -17,6 +29,19 @@ class Circle:
                                   self.centre.x+self.r,
                                   self.centre.y+self.r, 
                                   fill = fill_colour)
+
+class Player(Circle):
+    def __init__(self, index_location, centre, r):
+        super().__init__(centre, r)
+        self.index_location = index_location
+
+    def draw(self, canvas):
+        return canvas.create_oval(self.centre.x-self.r,
+                                  self.centre.y-self.r,
+                                  self.centre.x+self.r,
+                                  self.centre.y+self.r, 
+                                  fill = "orange")
+
 
 class Line:
     def __init__(self, point_1, point_2):
@@ -105,3 +130,9 @@ class Cell:
             self.has_up = False
         else:
             self.has_down = False
+    
+    def is_dead_end(self):
+        num_sides = [self.has_left, self.has_right, self.has_up, self.has_down].count(True)
+        if num_sides == 3:
+            return True
+        return False

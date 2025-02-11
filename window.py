@@ -1,12 +1,14 @@
 from tkinter import Tk, BOTH, Canvas
+from drawables import Player
 
 class Window:
         def __init__(self, width, height):
             self.width = width
             self.height = height
             self.root_widget = Tk()
-            self.title = "title"
+            self.root_widget.title = "Beans Maze"
             self.canvas = Canvas(self.root_widget, {"width": self.width, "height": self.height})
+            # self.canvas.bind("<Return>", self.a_press)
             self.canvas.pack()
             self.is_running = False
             self.root_widget.protocol("WM_DELETE_WINDOW", self.close)
@@ -38,4 +40,17 @@ class Window:
                                                 cell.bottom_right.x,
                                                 cell.bottom_right.y,
                                                 fill = "black")
+        def draw_text(self, text, fill_colour):
+            return text.draw(self.canvas, fill_colour)
+        
+        def draw_player(self, player):
+            return player.draw(self.canvas)
 
+        def a_press(self, event):
+            print("pressed a")
+            return
+
+        def update_player(self, current_player, new_player):
+            self.delete_item(current_player)
+            new_player = self.draw_player(new_player)
+            return new_player
