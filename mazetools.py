@@ -1,5 +1,5 @@
 from maze import Maze
-from window import Window
+from drawables import Player
 
 def small_maze(window):
     small = Maze(x1 = 50,
@@ -110,3 +110,73 @@ def set_up_playing_maze(window, size):
 
     return maze
     # maze.solve()
+
+def make_interactive(maze, window):
+
+    origin = list(maze.cells.values())[0].get_centre()
+
+    maze.player = Player((0,0), origin, 10)
+    maze.player_counter = window.draw_player(maze.player)
+
+    def move_down(event):
+        new_index = maze.player.index_location
+        new_index = (new_index[0], new_index[1]+1)
+        if maze.is_cell_reachable(maze.player.index_location, new_index):
+            maze.player.index_location = new_index
+            maze.player.centre.y += maze.cell_size_y
+            maze.player_counter = window.update_player(maze.player_counter, maze.player)
+            maze.player.score -= maze.cells[new_index].nearest_dead_end
+            maze.cells[new_index].nearest_dead_end = 0
+            window.delete_item(maze.dead_end_markers[new_index])
+            print(f"Moving Down. Player score now {maze.player.score}")
+        else:
+            print("Down is not a valid move")
+
+    def move_up(event):
+        new_index = maze.player.index_location
+        new_index = (new_index[0], new_index[1]-1)
+        if maze.is_cell_reachable(maze.player.index_location, new_index):
+            maze.player.index_location = new_index
+            maze.player.centre.y -= maze.cell_size_y
+            maze.player_counter = window.update_player(maze.player_counter, maze.player)
+            maze.player.score -= maze.cells[new_index].nearest_dead_end
+            maze.cells[new_index].nearest_dead_end = 0
+            window.delete_item(maze.dead_end_markers[new_index])
+            print(f"Moving Up. Player score now {maze.player.score}")
+        else:
+            print("Up is not a valid move")
+    
+    def move_left(event):
+        new_index = maze.player.index_location
+        new_index = (new_index[0]-1, new_index[1])
+        if maze.is_cell_reachable(maze.player.index_location, new_index):
+            maze.player.index_location = new_index
+            maze.player.centre.x -= maze.cell_size_x
+            maze.player_counter = window.update_player(maze.player_counter, maze.player)
+            maze.player.score -= maze.cells[new_index].nearest_dead_end
+            maze.cells[new_index].nearest_dead_end = 0
+            window.delete_item(maze.dead_end_markers[new_index])
+            print(f"Moving Left. Player score now {maze.player.score}")
+        else:
+            print("Left is not a valid move")
+    
+    def move_right(event):
+        new_index = maze.player.index_location
+        new_index = (new_index[0]+1, new_index[1])
+        if maze.is_cell_reachable(maze.player.index_location, new_index):
+            maze.player.index_location = new_index
+            maze.player.centre.x += maze.cell_size_x
+            maze.player_counter = window.update_player(maze.player_counter, maze.player)
+            maze.player.score -= maze.cells[new_index].nearest_dead_end
+            maze.cells[new_index].nearest_dead_end = 0
+            window.delete_item(maze.dead_end_markers[new_index])
+            print(f"Moving Right. Player score now {maze.player.score}")
+        else:
+            print("Right is not a valid move")
+
+
+    window.root_widget.bind("<Up>", lambda event: move_up(event))
+    window.root_widget.bind("<Down>", lambda event: move_down(event))
+    window.root_widget.bind("<Left>", lambda event: move_left(event))
+    window.root_widget.bind("<Right>", lambda event: move_right(event))
+    window.root_widget.mainloop()

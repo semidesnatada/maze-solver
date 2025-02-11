@@ -34,6 +34,7 @@ class Player(Circle):
     def __init__(self, index_location, centre, r):
         super().__init__(centre, r)
         self.index_location = index_location
+        self.score = 200
 
     def draw(self, canvas):
         return canvas.create_oval(self.centre.x-self.r,

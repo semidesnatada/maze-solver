@@ -18,6 +18,7 @@ class Maze:
         self.window = window
         self.frametime = frametime
         self.animate_creation = animate_creation
+        self.dead_end_markers ={}
         if seed:
             random.seed(seed)
         else:
@@ -304,7 +305,7 @@ class Maze:
             #draw a text in each cell with the cell.distance_to_dead_end value
             centre = cell.get_centre()
             count = Text(centre.x, centre.y, text = cell.nearest_dead_end)
-            dead_end_marker = self.window.draw_text(count, "black")
+            self.dead_end_markers[key] = self.window.draw_text(count, "black")
 
     def is_cell_reachable(self, cell_1_inds, cell_2_inds):
         valids = self.get_all_non_walled_adjacent_cells(cell_1_inds)
